@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 from sklearn import svm
+import numpy as np
 
 DEBUG = True
 
@@ -17,6 +18,17 @@ if DEBUG:
         img = Image.fromarray(np.array(image), 'L')
         img.save(path)
 
+def timing(f):
+    import time
+    def wrap(*args, **kwargs):
+        time1 = time.time()
+        ret = f(*args, **kwargs)
+        time2 = time.time()
+        print(f'{f.__name__} function took {(time2-time1):.3f} s')
+
+        return ret
+    return wrap
+
 
 DATA_DIR = 'data/'
 TEST_DIR = 'test/'
@@ -28,7 +40,7 @@ TRAIN_LABELS_FILENAME = DATA_DIR + DATASET + '/train-labels-idx1-ubyte'
 
 def bytes_to_int(byte_data):
     return int.from_bytes(byte_data, 'big')
-
+@timing
 def read_images(filename, n_max_images=None):
     images = []
     with open(filename, 'rb') as f:
@@ -47,8 +59,9 @@ def read_images(filename, n_max_images=None):
                     row.append(pixel)
                 image.append(row)
             images.append(image)
-    return images
+    return np.array(images)
 
+@timing
 def read_labels(filename, n_max_labels=None):
     labels = []
     with open(filename, 'rb') as f:
@@ -59,33 +72,40 @@ def read_labels(filename, n_max_labels=None):
         for label_idx in range(n_labels):
             label = bytes_to_int(f.read(1))
             labels.append(label)
-    return labels
+    return np.array(labels)
 
 def flatten_list(l):
-    return [pixel for sublist in l for pixel in sublist]
-
+    return np.array([pixel for sublist in l for pixel in sublist])
+@timing
 def extract_features(X):
-    return [flatten_list(sample) for sample in X]
+    return np.array([flatten_list(sample) for sample in X])
 
+@timing
 def ocr(X_train, y_train, X_test, kernel='linear'):
     clf = svm.SVC(kernel=kernel).fit(X_train, y_train)
+    # clf = svm.LinearSVC().fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     return y_pred
 
+
+
 def main():
-    train_n = 10000
-    test_n = 30
+    train_n = 40000
+    test_n = 4000
+    print("train_n =", train_n)
+    print("test_n =", test_n)
     X_train = read_images(TRAIN_DATA_FILENAME, train_n)
     y_train = read_labels(TRAIN_LABELS_FILENAME, train_n)
     X_test = read_images(TEST_DATA_FILENAME, test_n)
     y_test = read_labels(TEST_LABELS_FILENAME, test_n)
-    
+
     X_train = extract_features(X_train)
     X_test = extract_features(X_test)
 
     y_pred = ocr(X_train, y_train, X_test)
     accuracy = sum([int(y_pred_i) == int(y_test_i) for y_pred_i, y_test_i in zip(y_pred, y_test)])
+
     print("Predicted values =", y_pred)
     print("Actual values =", y_test)
     print(f"Accuracy = {accuracy / len(y_pred) * 100}%")
