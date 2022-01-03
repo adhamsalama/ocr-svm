@@ -20,8 +20,8 @@ def ocr(X_train, y_train, X_test, kernel='linear'):
     return y_pred
 
 def main():
-    train_n = 15000
-    test_n = 100
+    train_n = 20000
+    test_n = 1000
     print("train_n =", train_n)
     print("test_n =", test_n)
     X_train = read_images(TRAIN_DATA_FILENAME, train_n)
@@ -46,7 +46,7 @@ def main():
         f.writelines([
             f"train_n={train_n}, ",
             f"test_n={test_n}, ",
-            f"accuracy={accuracy}, ",
+            f"accuracy={accuracy:.2f}, ",
             f"time={time2-time1:.3f} seconds"
             f"\n{'=' * 60}\n"
         ])
