@@ -67,15 +67,15 @@ def flatten_list(l):
 def extract_features(X):
     return [flatten_list(sample) for sample in X]
 
-def ocr(X_train, y_train, X_test, kernel='linear'):
+def ocr(X_train, y_train, X_test, kernel='rbf'):
     clf = svm.SVC(kernel=kernel).fit(X_train, y_train)
     y_pred = clf.predict(X_test)
 
     return y_pred
 
 def main():
-    train_n = 10000
-    test_n = 30
+    train_n = 2000
+    test_n = 20
     X_train = read_images(TRAIN_DATA_FILENAME, train_n)
     y_train = read_labels(TRAIN_LABELS_FILENAME, train_n)
     X_test = read_images(TEST_DATA_FILENAME, test_n)
@@ -85,10 +85,17 @@ def main():
     X_test = extract_features(X_test)
 
     y_pred = ocr(X_train, y_train, X_test)
-    accuracy = sum([int(y_pred_i) == int(y_test_i) for y_pred_i, y_test_i in zip(y_pred, y_test)])
+    accuracy = sum([int(y_pred_i) == int(y_test_i) for y_pred_i, y_test_i in zip(y_pred, y_test)]) / len(y_pred)
     print("Predicted values =", y_pred)
     print("Actual values =", y_test)
-    print(f"Accuracy = {accuracy / len(y_pred) * 100}%")
+    print(f"Accuracy = {accuracy * 100}%")
+    with open("analytics.txt", "a") as f:
+        f.writelines([
+            f"\ntrain_n={train_n}, ",
+            f"test_n={test_n}, ",
+            f"accuracy={accuracy}",
+            f"\n{'=' * 50}\n"
+        ])
 
 if __name__ == "__main__":
     main()
