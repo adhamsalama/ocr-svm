@@ -20,7 +20,7 @@ def ocr(X_train, y_train, X_test, kernel='linear'):
     return y_pred
 
 def main():
-    train_n = 20000
+    train_n = 25000
     test_n = 1000
     print("train_n =", train_n)
     print("test_n =", test_n)
@@ -33,20 +33,22 @@ def main():
     X_test = extract_features(X_test)
 
     time1 = time.time()
-    y_pred = ocr(X_train, y_train, X_test)
+    kernel = 'rbf' # ["linear", "rbf", "poly"]
+    y_pred = ocr(X_train, y_train, X_test, kernel)
     time2 = time.time()
-    accuracy = sum([int(y_pred_i) == int(y_test_i) for y_pred_i, y_test_i in zip(y_pred, y_test)])  / len(y_pred)
+    accuracy = sum([int(y_pred_i) == int(y_test_i) for y_pred_i, y_test_i in zip(y_pred, y_test)])  / len(y_pred) * 100
 
     print("Predicted values =", y_pred)
     print("Actual values =", y_test)
-    print(f"Accuracy = {accuracy * 100}%")
+    print(f"Accuracy = {accuracy}%")
 
     # Write analytics to  a text file
     with open("analytics.txt", "a") as f:
         f.writelines([
             f"train_n={train_n}, ",
             f"test_n={test_n}, ",
-            f"accuracy={accuracy:.2f}, ",
+            f"accuracy={accuracy}%, ",
+            f"kernel={kernel}, ",
             f"time={time2-time1:.3f} seconds"
             f"\n{'=' * 60}\n"
         ])
