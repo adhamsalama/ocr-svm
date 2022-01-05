@@ -14,7 +14,7 @@ def timing(f):
 
 def bytes_to_int(byte_data):
     return int.from_bytes(byte_data, 'big')
-
+@timing
 def read_images(filename, n_max_images=None):
     images = []
     with open(filename, 'rb') as f:
@@ -29,7 +29,7 @@ def read_images(filename, n_max_images=None):
             for row_idx in range(n_rows):
                 row = []
                 for col_idx in range(n_columns):
-                    pixel = bytes_to_int(f.read(1))
+                    pixel = f.read(1)
                     row.append(pixel)
                 image.append(row)
             images.append(image)
@@ -49,7 +49,7 @@ def read_labels(filename, n_max_labels=None):
     return np.array(labels)
 
 def flatten_list(l):
-    return np.array([pixel for sublist in l for pixel in sublist])
+    return np.array([bytes_to_int(pixel) for sublist in l for pixel in sublist])
 
 DEBUG = True
 
